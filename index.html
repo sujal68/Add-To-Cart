@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Items</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 16px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="file"],
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .error {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .success {
+            color: #27ae60;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .view-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            transition: color 0.3s ease;
+        }
+
+        .view-link:hover {
+            color: #764ba2;
+        }
+
+        #popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+
+        @keyframes popupZoom {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        #popupContent {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            animation: popupZoom 0.3s ease;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        #popupContent h2 {
+            color: #27ae60;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        #popupContent button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s ease;
+        }
+
+        #popupContent button:hover {
+            transform: translateY(-2px);
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .file-input-label:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+        }
+
+        .file-input-label.has-file {
+            background: #d4edda;
+            border-color: #27ae60;
+            color: #155724;
+        }
+
+        input[type="file"] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+
+            h2 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Add New Product</h2>
+        <form id="productForm">
+            <div class="form-group">
+                <label for="image">Product Image *</label>
+                <div class="file-input-wrapper">
+                    <input type="file" id="image" accept="image/*" required>
+                    <label for="image" class="file-input-label" id="fileLabel">
+                        📁 Choose an image file
+                    </label>
+                </div>
+                <div class="error" id="imageError"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="name">Product Name *</label>
+                <input type="text" id="name" required maxlength="100" placeholder="Enter product name">
+                <div class="error" id="nameError"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="detail">Product Details *</label>
+                <textarea id="detail" required maxlength="500"
+                    placeholder="Enter product details and features..."></textarea>
+                <div class="error" id="detailError"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="price">Product Price (₹) *</label>
+                <input type="number" id="price" required min="0" step="0.01" placeholder="0.00">
+                <div class="error" id="priceError"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="charge">Delivery Charge (₹) *</label>
+                <input type="number" id="charge" required min="0" step="0.01" placeholder="0.00">
+                <div class="error" id="chargeError"></div>
+            </div>
+
+            <div class="loading" id="loading">
+                <div>Adding product...</div>
+            </div>
+
+            <button type="submit" class="btn" id="addBtn">
+                ✨ Add Product
+            </button>
+        </form>
+
+        <a href="view.html" class="view-link">👀 View All Products →</a>
+    </div>
+
+    <div id="popup">
+        <div id="popupContent">
+            <h2>✅ Success!</h2>
+            <p>Product added successfully!</p>
+            <a href="view.html" class="view-link" style="display: block; margin: 20px 0;">View Products</a>
+            <button onclick="closePopup()">Continue Adding</button>
+        </div>
+    </div>
+
+    <script>
+        class ProductManager {
+            constructor() {
+                this.products = this.getStoredProducts();
+                this.initializeEventListeners();
+                this.setupValidation();
+            }
+
+            getStoredProducts() {
+                try {
+                    const stored = localStorage.getItem('AddProduct');
+                    return stored ? JSON.parse(stored) : [];
+                } catch (error) {
+                    console.error('Error parsing stored products:', error);
+                    return [];
+                }
+            }
+
+            saveProducts() {
+                try {
+                    localStorage.setItem('AddProduct', JSON.stringify(this.products));
+                    return true;
+                } catch (error) {
+                    console.error('Error saving products:', error);
+                    this.showError('Failed to save product. Storage might be full.');
+                    return false;
+                }
+            }
+
+            initializeEventListeners() {
+                const form = document.getElementById('productForm');
+                const fileInput = document.getElementById('image');
+                const fileLabel = document.getElementById('fileLabel');
+
+                form.addEventListener('submit', (e) => this.handleSubmit(e));
+
+                fileInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        fileLabel.textContent = `📁 ${file.name}`;
+                        fileLabel.classList.add('has-file');
+                        this.clearError('imageError');
+                    } else {
+                        fileLabel.textContent = '📁 Choose an image file';
+                        fileLabel.classList.remove('has-file');
+                    }
+                });
+
+                // Real-time validation
+                document.getElementById('name').addEventListener('input', () => this.validateName());
+                document.getElementById('detail').addEventListener('input', () => this.validateDetail());
+                document.getElementById('price').addEventListener('input', () => this.validatePrice());
+                document.getElementById('charge').addEventListener('input', () => this.validateCharge());
+            }
+
+            setupValidation() {
+                const inputs = document.querySelectorAll('input, textarea');
+                inputs.forEach(input => {
+                    input.addEventListener('blur', () => this.validateField(input.id));
+                });
+            }
+
+            validateField(fieldId) {
+                switch (fieldId) {
+                    case 'name': return this.validateName();
+                    case 'detail': return this.validateDetail();
+                    case 'price': return this.validatePrice();
+                    case 'charge': return this.validateCharge();
+                    case 'image': return this.validateImage();
+                    default: return true;
+                }
+            }
+
+            validateName() {
+                const name = document.getElementById('name').value.trim();
+                const errorElement = document.getElementById('nameError');
+
+                if (!name) {
+                    this.showFieldError(errorElement, 'Product name is required');
+                    return false;
+                }
+
+                if (name.length < 3) {
+                    this.showFieldError(errorElement, 'Name must be at least 3 characters long');
+                    return false;
+                }
+
+                if (name.length > 100) {
+                    this.showFieldError(errorElement, 'Name must be less than 100 characters');
+                    return false;
+                }
+
+                this.clearError('nameError');
+                return true;
+            }
+
+            validateDetail() {
+                const detail = document.getElementById('detail').value.trim();
+                const errorElement = document.getElementById('detailError');
+
+                if (!detail) {
+                    this.showFieldError(errorElement, 'Product details are required');
+                    return false;
+                }
+
+                if (detail.length < 10) {
+                    this.showFieldError(errorElement, 'Details must be at least 10 characters long');
+                    return false;
+                }
+
+                if (detail.length > 500) {
+                    this.showFieldError(errorElement, 'Details must be less than 500 characters');
+                    return false;
+                }
+
+                this.clearError('detailError');
+                return true;
+            }
+
+            validatePrice() {
+                const price = parseFloat(document.getElementById('price').value);
+                const errorElement = document.getElementById('priceError');
+
+                if (isNaN(price) || price <= 0) {
+                    this.showFieldError(errorElement, 'Please enter a valid price greater than 0');
+                    return false;
+                }
+
+                if (price > 999999) {
+                    this.showFieldError(errorElement, 'Price cannot exceed ₹999,999');
+                    return false;
+                }
+
+                this.clearError('priceError');
+                return true;
+            }
+
+            validateCharge() {
+                const charge = parseFloat(document.getElementById('charge').value);
+                const errorElement = document.getElementById('chargeError');
+
+                if (isNaN(charge) || charge < 0) {
+                    this.showFieldError(errorElement, 'Please enter a valid delivery charge (0 or more)');
+                    return false;
+                }
+
+                if (charge > 9999) {
+                    this.showFieldError(errorElement, 'Delivery charge cannot exceed ₹9,999');
+                    return false;
+                }
+
+                this.clearError('chargeError');
+                return true;
+            }
+
+            validateImage() {
+                const imageFile = document.getElementById('image').files[0];
+                const errorElement = document.getElementById('imageError');
+
+                if (!imageFile) {
+                    this.showFieldError(errorElement, 'Please select an image file');
+                    return false;
+                }
+
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+                if (!allowedTypes.includes(imageFile.type)) {
+                    this.showFieldError(errorElement, 'Please select a valid image file (JPEG, PNG, GIF, WebP)');
+                    return false;
+                }
+
+                const maxSize = 5 * 1024 * 1024; // 5MB
+                if (imageFile.size > maxSize) {
+                    this.showFieldError(errorElement, 'Image file size must be less than 5MB');
+                    return false;
+                }
+
+                this.clearError('imageError');
+                return true;
+            }
+
+            validateForm() {
+                const validations = [
+                    this.validateImage(),
+                    this.validateName(),
+                    this.validateDetail(),
+                    this.validatePrice(),
+                    this.validateCharge()
+                ];
+
+                return validations.every(validation => validation === true);
+            }
+
+            showFieldError(errorElement, message) {
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+            }
+
+            clearError(errorId) {
+                const errorElement = document.getElementById(errorId);
+                errorElement.style.display = 'none';
+            }
+
+            showError(message) {
+                alert('Error: ' + message);
+            }
+
+            showLoading(show) {
+                const loadingElement = document.getElementById('loading');
+                const addBtn = document.getElementById('addBtn');
+
+                if (show) {
+                    loadingElement.style.display = 'block';
+                    addBtn.disabled = true;
+                } else {
+                    loadingElement.style.display = 'none';
+                    addBtn.disabled = false;
+                }
+            }
+
+            generateUniqueId() {
+                return Date.now() + Math.floor(Math.random() * 1000);
+            }
+
+            async handleSubmit(e) {
+                e.preventDefault();
+
+                if (!this.validateForm()) {
+                    return;
+                }
+
+                this.showLoading(true);
+
+                try {
+                    const imageFile = document.getElementById('image').files[0];
+                    const name = document.getElementById('name').value.trim();
+                    const detail = document.getElementById('detail').value.trim();
+                    const price = parseFloat(document.getElementById('price').value);
+                    const charge = parseFloat(document.getElementById('charge').value);
+
+                    const productData = {
+                        image: imageFile.name,
+                        name: name,
+                        detail: detail,
+                        price: price.toFixed(2),
+                        charge: charge.toFixed(2),
+                        no: this.generateUniqueId(),
+                        dateAdded: new Date().toISOString()
+                    };
+
+                    // Check for duplicate names
+                    const existingProduct = this.products.find(p =>
+                        p.name.toLowerCase() === name.toLowerCase()
+                    );
+
+                    if (existingProduct) {
+                        this.showFieldError(document.getElementById('nameError'), 'A product with this name already exists');
+                        this.showLoading(false);
+                        return;
+                    }
+
+                    this.products.push(productData);
+
+                    if (this.saveProducts()) {
+                        this.resetForm();
+                        this.showSuccessPopup();
+                    }
+                } catch (error) {
+                    console.error('Error adding product:', error);
+                    this.showError('Failed to add product. Please try again.');
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            resetForm() {
+                document.getElementById('productForm').reset();
+                document.getElementById('fileLabel').textContent = '📁 Choose an image file';
+                document.getElementById('fileLabel').classList.remove('has-file');
+
+                // Clear all errors
+                const errorElements = document.querySelectorAll('.error');
+                errorElements.forEach(error => error.style.display = 'none');
+            }
+
+            showSuccessPopup() {
+                document.getElementById('popup').style.display = 'flex';
+            }
+        }
+
+        // Initialize the application
+        const productManager = new ProductManager();
+
+        // Global functions for popup
+        function closePopup() {
+            document.getElementById('popup').style.display = 'none';
+        }
+
+        // Close popup on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closePopup();
+            }
+        });
+
+        // Close popup on outside click
+        document.getElementById('popup').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('popup')) {
+                closePopup();
+            }
+        });
+    </script>
+</body>
+
+</html>
